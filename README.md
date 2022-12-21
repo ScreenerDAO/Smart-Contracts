@@ -11,3 +11,4 @@ REPORT_GAS=true npx hardhat test
 npx hardhat node
 npx hardhat run scripts/deploy.ts
 ```
+Tesnet address: 0xA32378239DE1dA367C4f7341F9E3355a76B7246e

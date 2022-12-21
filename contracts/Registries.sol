@@ -34,18 +34,26 @@ contract Registries is Initializable {
         string memory ticker,
         string memory dataHash
     ) public {
+        require(id < numberCompanies, "Company doesn't exist");
+
         emit CompanyEdited(id, name, ticker, dataHash);
     }
 
     function editCompanyName(uint id, string memory name) public {
+        require(id < numberCompanies, "Company doesn't exist");
+
         emit CompanyNameEdited(id, name);
     } 
 
     function editCompanyTicker(uint id, string memory ticker) public {
+        require(id < numberCompanies, "Company doesn't exist");
+
         emit CompanyTickerEdited(id, ticker);
     }
 
     function editCompanyData(uint id, string memory dataHash) external {
+        require(id < numberCompanies, "Company doesn't exist");
+
         emit CompanyDataEdited(id, dataHash);
     }
 }
