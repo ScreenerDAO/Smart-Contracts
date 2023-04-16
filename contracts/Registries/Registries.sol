@@ -19,6 +19,7 @@ struct EditCompanyParameters {
 
 contract Registries is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     uint public numberCompanies;
+    address private validatorContractAddress;
 
     event CompanyAdded(
         uint id,
@@ -32,7 +33,7 @@ contract Registries is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     event CompanyDataEdited(uint id, string dataHash);
 
     modifier companyEditAccess(uint _companyId) {
-        require(CompanyEditValidator(getValidatorContractAddress()).addressHasRightToEditCompany(_companyId, msg.sender) || msg.sender == owner(), "No access to edit company");
+        require(CompanyEditValidator(validatorContractAddress).addressHasRightToEditCompany(_companyId, msg.sender) || msg.sender == owner(), "No access to edit company");
         _;
     }
 
@@ -45,15 +46,10 @@ contract Registries is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         __Ownable_init();
     }
 
-    /** Should be repaced with the address of the validator contract address */
-    function getValidatorContractAddress () private pure returns (address) {
-        return 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9;
-    }
-
     function addNewCompanies(CreateCompanyParameters[] calldata parameters) public {
         for (uint i = 0; i < parameters.length; i++) {
             numberCompanies++;
-            CompanyEditValidator(getValidatorContractAddress()).addAccess(numberCompanies - 1, msg.sender);
+            CompanyEditValidator(validatorContractAddress).addAccess(numberCompanies - 1, msg.sender);
 
             emit CompanyAdded(numberCompanies - 1, parameters[i].name, parameters[i].ticker, parameters[i].dataHash);
         }
@@ -61,7 +57,7 @@ contract Registries is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 
     function editCompanies(EditCompanyParameters[] calldata parameters) public {
         for (uint i = 0; i < parameters.length; i++) {
-            require(CompanyEditValidator(getValidatorContractAddress()).addressHasRightToEditCompany(parameters[i].companyId, msg.sender) || msg.sender == owner(), "No access to edit company");
+            require(CompanyEditValidator(validatorContractAddress).addressHasRightToEditCompany(parameters[i].companyId, msg.sender) || msg.sender == owner(), "No access to edit company");
 
             emit CompanyDataEdited(parameters[i].companyId, parameters[i].dataHash);
         }
@@ -73,7 +69,7 @@ contract Registries is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         string calldata _dataHash
     ) public {
         numberCompanies++;
-        CompanyEditValidator(getValidatorContractAddress()).addAccess(numberCompanies - 1, msg.sender);
+        CompanyEditValidator(validatorContractAddress).addAccess(numberCompanies - 1, msg.sender);
 
         emit CompanyAdded(numberCompanies - 1, _name, _ticker, _dataHash);
     }
@@ -97,6 +93,10 @@ contract Registries is Initializable, OwnableUpgradeable, UUPSUpgradeable {
         string calldata _dataHash
     ) external companyExists(_id) onlyOwner {
         emit CompanyEdited(_id, _name, _ticker, _dataHash);
+    }
+
+    function setValidatorContractAddress(address _contractAddress) external onlyOwner {
+        validatorContractAddress = _contractAddress;
     }
 
     function transferUpgradeOwnership(address _newOwner) public onlyOwner {

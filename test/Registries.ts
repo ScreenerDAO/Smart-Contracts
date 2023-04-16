@@ -37,10 +37,12 @@ describe("Registries", async() => {
         dao = await upgrades.deployProxy(Dao, [registries.address, companyEditValidator.address]) as DAO
         await dao.deployed()
 
-        registries.transferUpgradeOwnership(dao.address)
-        registries.transferOwnership(dao.address)
-        companyEditValidator.transferUpgradeOwnership(dao.address)
-        companyEditValidator.transferOwnership(dao.address)
+        await registries.transferUpgradeOwnership(dao.address)
+        await registries.transferOwnership(dao.address)
+        await companyEditValidator.transferUpgradeOwnership(dao.address)
+        await companyEditValidator.transferOwnership(dao.address)
+        
+        await dao.setValidatorContractAddress(companyEditValidator.address)
     })
     
     it("Should create company", async () => {

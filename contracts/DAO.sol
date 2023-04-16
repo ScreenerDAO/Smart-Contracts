@@ -58,6 +58,10 @@ contract DAO is Initializable, OwnableUpgradeable {
         registries.editCompany(_id, _name, _ticker, _dataHash);
     }
 
+    function setValidatorContractAddress(address _newAddress) external onlyOwner {
+        registries.setValidatorContractAddress(_newAddress);
+    }
+
     /** Upgrade contracts functions */
 
     function upgradeRegistries(address _newAddress) external onlyOwner {

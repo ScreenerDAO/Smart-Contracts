@@ -9,6 +9,7 @@ import "./IRegistriesV2.sol";
 
 contract RegistriesRestricted is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     uint public numberCompanies;
+    address private validatorContractAddress;
 
     event CompanyAdded(
         uint id,
@@ -87,6 +88,10 @@ contract RegistriesRestricted is Initializable, OwnableUpgradeable, UUPSUpgradea
         string calldata _dataHash
     ) external companyExists(_id) onlyOwner {
         emit CompanyEdited(_id, _name, _ticker, _dataHash);
+    }
+
+    function setValidatorContractAddress(address _contractAddress) external onlyOwner {
+        validatorContractAddress = _contractAddress;
     }
 
     function transferUpgradeOwnership(address _newOwner) public onlyOwner {

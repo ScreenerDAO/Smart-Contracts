@@ -24,4 +24,5 @@ interface IRegistries {
     function upgradeTo(address newImplementation) external;
     function transferUpgradeOwnership(address newOwner) external;
     function transferOwnership(address newOwner) external;
+    function setValidatorContractAddress(address _contractAddress) external;
 }
