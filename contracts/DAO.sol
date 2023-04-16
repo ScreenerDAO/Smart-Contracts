@@ -4,71 +4,87 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./RegistriesV2/IRegistriesV2.sol";
-
-struct AddCompanyParameters {
-    string name;
-    string ticker;
-    string dataHash;
-    address owner;
-}
-
-struct EditCompanyParameters {
-    uint id;
-    string dataHash;
-}
+import "./ICompanyEditValidator.sol";
 
 contract DAO is Initializable, OwnableUpgradeable {
-    address registriesAddress;
+    IRegistriesV2 private registries;
+    ICompanyEditValidator private companyEditValidator;
 
-    function initialize(address _address) public initializer {
+    function initialize(
+        IRegistriesV2 _registriesInstance, 
+        ICompanyEditValidator _companyEditValidatorInstance
+    ) public initializer {
         __Ownable_init();
 
-        registriesAddress = _address;
+        registries = _registriesInstance;
+        companyEditValidator = _companyEditValidatorInstance;
     }
 
     function addNewCompany(
-        string memory _name,
-        string memory _ticker,
-        string memory _dataHash,
+        string calldata _name,
+        string calldata _ticker,
+        string calldata _dataHash,
         address _owner
     ) external onlyOwner {
-        IRegistriesV2(registriesAddress).addNewCompany(_name, _ticker, _dataHash, _owner);
+        registries.addNewCompany(_name, _ticker, _dataHash, _owner);
     }
 
-    function editCompanyData(uint _id, string memory _dataHash) external onlyOwner {
-        IRegistriesV2(registriesAddress).editCompanyData(_id, _dataHash);
+    function editCompanyData(uint _id, string calldata _dataHash) external onlyOwner {
+        registries.editCompanyData(_id, _dataHash);
     }
 
-    function editCompanyTicker(uint _id, string memory _ticker) external onlyOwner {
-        IRegistriesV2(registriesAddress).editCompanyTicker(_id, _ticker);
+    function editCompanyTicker(uint _id, string calldata _ticker) external onlyOwner {
+        registries.editCompanyTicker(_id, _ticker);
     }
 
-    function editCompanyName(uint _id, string memory _name) external onlyOwner {
-        IRegistriesV2(registriesAddress).editCompanyName(_id, _name);
+    function editCompanyName(uint _id, string calldata _name) external onlyOwner {
+        registries.editCompanyName(_id, _name);
     }
 
-    function addMultipleCompanies(AddCompanyParameters[] calldata parameters) external onlyOwner {
-        for (uint i = 0; i < parameters.length; i++) {
-            IRegistriesV2(registriesAddress).addNewCompany(parameters[i].name, parameters[i].ticker, parameters[i].dataHash, parameters[i].owner);
-        }
+    function addNewCompanies(AddCompanyParameters[] calldata parameters) external onlyOwner {
+        registries.addNewCompanies(parameters);
     }
 
-    function editMultipleCompaniesData(EditCompanyParameters[] calldata parameters) external onlyOwner {
-        for (uint i = 0; i < parameters.length; i++) {
-            IRegistriesV2(registriesAddress).editCompanyData(parameters[i].id, parameters[i].dataHash);
-        }
+    function editCompanies(EditCompanyParameters[] calldata parameters) external onlyOwner {
+        registries.editCompanies(parameters);
     }
 
     function editCompany(
         uint _id,
-        string memory _name,
-        string memory _ticker,
-        string memory _dataHash
+        string calldata _name,
+        string calldata _ticker,
+        string calldata _dataHash
     ) external onlyOwner {
-        IRegistriesV2(registriesAddress).editCompany(_id, _name, _ticker, _dataHash);
+        registries.editCompany(_id, _name, _ticker, _dataHash);
     }
 
+    /** Upgrade contracts functions */
+
     function upgradeRegistries(address _newAddress) external onlyOwner {
-        IRegistriesV2(registriesAddress).upgradeTo(_newAddress);
+        registries.upgradeTo(_newAddress);
+    }
+
+    function upgradeCompanyEditValidator(address _newAddress) external onlyOwner {
+        companyEditValidator.upgradeTo(_newAddress);
+    }
+
+    /** Transfer upgrade ownership functions */
+
+    function changeRegistriesUpgradeOwner(address newOwner) external onlyOwner {
+        registries.transferUpgradeOwnership(newOwner);
+    }
+
+    function changeCompanyEditValidatorUpgradeOwnership(address newOwner) external onlyOwner {
+        companyEditValidator.transferUpgradeOwnership(newOwner);
+    }
+
+    /** Change owner functions */
+
+    function changeRegistriesOwner(address newOwner) external onlyOwner {
+        registries.transferOwnership(newOwner);
+    }
+
+    function changeCompanyEditValidatorOwner(address newOwner) external onlyOwner {
+        companyEditValidator.transferOwnership(newOwner);
     }
 }

@@ -4,8 +4,10 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "./ICompanyEditValidator.sol";
 
 contract CompanyEditValidator is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+    address[] public users;
     mapping(uint => mapping(address => bool)) public addressHasRightToEditCompany;
     address registriesContractAddress;
 
@@ -31,9 +33,9 @@ contract CompanyEditValidator is Initializable, OwnableUpgradeable, UUPSUpgradea
         addressHasRightToEditCompany[_companyId][_user] = false;
     }
 
-    function _authorizeUpgrade(address) internal override onlyOwner {}
-
-    function transferRegistriesUpgradeOwnership(address _newOwner) public onlyOwner {
+    function transferUpgradeOwnership(address _newOwner) public onlyOwner {
         _changeAdmin(_newOwner);
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 }

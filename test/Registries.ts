@@ -34,12 +34,12 @@ describe("Registries", async() => {
         await companyEditValidator.deployed()
 
         const Dao = await ethers.getContractFactory("DAO")
-        dao = await upgrades.deployProxy(Dao, [registries.address]) as DAO
+        dao = await upgrades.deployProxy(Dao, [registries.address, companyEditValidator.address]) as DAO
         await dao.deployed()
 
-        registries.transferRegistriesUpgradeOwnership(dao.address)
+        registries.transferUpgradeOwnership(dao.address)
         registries.transferOwnership(dao.address)
-        companyEditValidator.transferRegistriesUpgradeOwnership(dao.address)
+        companyEditValidator.transferUpgradeOwnership(dao.address)
         companyEditValidator.transferOwnership(dao.address)
     })
     
@@ -74,7 +74,7 @@ describe("Registries", async() => {
             return [0, `${companyData.dataHash}2`]
         })
 
-        await dao.editMultipleCompaniesData(parameters as any)
+        await dao.editCompanies(parameters as any)
     })
 
     it ("Should revert when editing without access", async() => {
@@ -97,11 +97,32 @@ describe("Registries", async() => {
             return [companyData.name, companyData.ticker,companyData.dataHash,companyData.owner]
         })
 
-        await dao.addMultipleCompanies(parameters as any)
+        await dao.addNewCompanies(parameters as any)
     })
 
     it('Should revert when creating company without access', async() => {
         await expect(registriesRestricted.addNewCompany(companyData.name, companyData.ticker, companyData.dataHash, account1.address))
             .to.be.rejectedWith('Ownable: caller is not the owner')
+    })
+
+    it('Should revert all tries to change ownerships in dao methods', async() => {
+        await expect(dao.connect(account2).changeRegistriesUpgradeOwner(account2.address)).to.be.reverted
+        await expect(dao.connect(account2).changeCompanyEditValidatorUpgradeOwnership(account2.address)).to.be.reverted
+        await expect(dao.connect(account2).changeRegistriesOwner(account2.address))
+        await expect(dao.connect(account2).changeCompanyEditValidatorOwner(account2.address))
+    })
+
+    it('Should change ownership in dao methods', async() => {
+        dao.changeCompanyEditValidatorOwner(account2.address)
+        dao.changeCompanyEditValidatorUpgradeOwnership(account2.address)
+        dao.changeRegistriesOwner(account2.address)
+        dao.changeCompanyEditValidatorUpgradeOwnership(account2.address)
+    })
+
+    it('Should revert all tries to change ownerships in dao methods', async() => {
+        await expect(dao.connect(account1).changeRegistriesUpgradeOwner(account2.address)).to.be.reverted
+        await expect(dao.connect(account1).changeCompanyEditValidatorUpgradeOwnership(account2.address)).to.be.reverted
+        await expect(dao.connect(account1).changeRegistriesOwner(account2.address))
+        await expect(dao.connect(account1).changeCompanyEditValidatorOwner(account2.address))
     })
 })
